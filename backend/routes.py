@@ -66,3 +66,27 @@ def count():
 
     return {"count": count}, 200
 
+@app.route("/song")
+def songs():
+    songs = db.songs.find({})
+    return {"songs": parse_json(songs)}, 200
+
+@app.route("/song/<int:id>")
+def get_song_by_id(id):
+    song = db.songs.find_one({"id": id})
+    if not song:
+        return {"message": "song with id not found"}, 404
+    else:
+        return parse_json(song), 200
+    
+@app.route("/song", methods=["POST"])
+def create_song():
+    new_song = request.json
+    song = db.songs.find_one({"id": new_song["id"]})
+
+    if song:
+        return ({"Message": f"song with id {song['id']} already present"}, 302)
+    else:
+        result = db.songs.insert_one(new_song)
+        return ({"inserted id": parse_json(result.inserted_id)}, 201)
+
